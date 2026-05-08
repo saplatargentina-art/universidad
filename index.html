@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marco SAPLAT</title>
+
+<style>
+
+body{
+  margin:0;
+  padding:20px;
+  background:#f2f2f2;
+  font-family:Arial, sans-serif;
+  text-align:center;
+}
+
+h1{
+  color:#0b2e59;
+}
+
+.container{
+  position:relative;
+  width:420px;
+  max-width:100%;
+  margin:auto;
+}
+
+#camera,
+#photo,
+#frame{
+  width:100%;
+  border-radius:10px;
+}
+
+#camera,
+#photo{
+  position:absolute;
+  top:0;
+  left:0;
+  height:100%;
+  object-fit:cover;
+  z-index:1;
+}
+
+#frame{
+  position:relative;
+  z-index:5;
+  pointer-events:none;
+}
+
+.buttons{
+  margin-top:20px;
+}
+
+button,
+label{
+  display:inline-block;
+  margin:5px;
+  padding:12px 18px;
+  background:#0b2e59;
+  color:white;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:15px;
+}
+
+input{
+  display:none;
+}
+
+canvas{
+  display:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>MARCO SAPLAT</h1>
+
+<div class="container" id="capture">
+
+  <video id="camera" autoplay playsinline></video>
+
+  <img id="photo">
+
+  <img id="frame" src="marco.png">
+
+</div>
+
+<div class="buttons">
+
+  <label for="upload">
+    SUBIR FOTO
+  </label>
+
+  <input type="file" id="upload" accept="image/*">
+
+  <button onclick="startCamera()">
+    SACAR FOTO
+  </button>
+
+  <button onclick="takePhoto()">
+    TOMAR FOTO
+  </button>
+
+  <button onclick="downloadImage()">
+    DESCARGAR
+  </button>
+
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+
+const upload = document.getElementById('upload');
+const photo = document.getElementById('photo');
+const camera = document.getElementById('camera');
+const canvas = document.getElementById('canvas');
+
+let stream;
+
+upload.addEventListener('change', function(e){
+
+const file = e.target.files[0];
+
+if(file){
+
+const reader = new FileReader();
+
+reader.onload = function(event){
+
+photo.src = event.target.result;
+photo.style.display = 'block';
+camera.style.display = 'none';
+
+}
+
+reader.readAsDataURL(file);
+
+}
+
+});
+
+async function startCamera(){
+
+try{
+
+stream = await navigator.mediaDevices.getUserMedia({
+video:true
+});
+
+camera.srcObject = stream;
+
+camera.style.display = 'block';
+photo.style.display = 'none';
+
+}catch(err){
+
+alert('No se pudo acceder a la cámara');
+
+}
+
+}
+
+function takePhoto(){
+
+canvas.width = camera.videoWidth;
+canvas.height = camera.videoHeight;
+
+const ctx = canvas.getContext('2d');
+
+ctx.drawImage(camera,0,0);
+
+photo.src = canvas.toDataURL('image/png');
+
+photo.style.display = 'block';
+camera.style.display = 'none';
+
+if(stream){
+stream.getTracks().forEach(track => track.stop());
+}
+
+}
+
+function downloadImage(){
+
+html2canvas(document.querySelector('#capture')).then(canvas => {
+
+const link = document.createElement('a');
+
+link.download = 'marco-saplat.png';
+link.href = canvas.toDataURL();
+
+link.click();
+
+});
+
+}
+
+</script>
+
+</body>
+</html>
